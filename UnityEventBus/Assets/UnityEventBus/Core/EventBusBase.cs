@@ -1,27 +1,26 @@
-﻿using System;
+﻿using Assets.UnityEventBus.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEventBus.API;
 
 namespace UnityEventBus.Core
 {
     public delegate void StringMethod(string s);
 
-    public class EventBus 
+    public abstract class EventBusBase : EventBus
     {
-        private class DelegateInformation
-        {
-            public string eventName;
-            public Delegate delegateToFire;
-            public object target;
-        }
+        protected List<DelegateDefinition> delegateDefinitions = new List<DelegateDefinition>();
 
-        List<DelegateInformation> delegates = new List<DelegateInformation>();
+        #region Impl of EventBus
+
+        public string Name { get; set; }
 
         public bool IsRegistered(object listener)
         {
             if (listener == null) return false;
-            List<DelegateInformation> delegatesToRemove = delegates.FindAll(di => di.target == listener);
+            List<DelegateDefinition> delegatesToRemove = delegateDefinitions.FindAll(di => di.target == listener);
             return delegatesToRemove.Count > 0;
         }
 
@@ -40,35 +39,24 @@ namespace UnityEventBus.Core
                 if (string.IsNullOrEmpty(attrs[0].EventName))
                     continue;
 
-                DelegateInformation di = new DelegateInformation() { eventName = attrs[0].EventName, target = listener };
+                DelegateDefinition di = new DelegateDefinition() { eventName = attrs[0].EventName, target = listener };
                 di.delegateToFire = Delegate.CreateDelegate(typeof(StringMethod), listener, mi);
-                delegates.Add(di);
+                delegateDefinitions.Add(di);
             }
         }
-
 
         public void Unregister(object listener, string eventName)
         {
             if (string.IsNullOrEmpty(eventName)) return;
 
-            List<DelegateInformation> delegatesToRemove = delegates.FindAll(di => di.eventName == eventName);
-            foreach (DelegateInformation di in delegatesToRemove)
-            {
-                delegates.Remove(di);
-            }
+            List<DelegateDefinition> delegatesToRemove = delegateDefinitions.FindAll(di => di.eventName == eventName);
+            foreach (DelegateDefinition di in delegatesToRemove)
+                delegateDefinitions.Remove(di);
         }
 
-        public void Post(string eventName)
-        {
-            if (string.IsNullOrEmpty(eventName)) return;
+        #endregion
 
-            List<DelegateInformation> delegatesToFire = delegates.FindAll(di => di.eventName == eventName);
-            foreach(DelegateInformation di in delegatesToFire)
-            {
-                di.delegateToFire.DynamicInvoke(eventName);
-            }
-        }
+        public abstract void Post(string eventName);
     }
-
 }
 

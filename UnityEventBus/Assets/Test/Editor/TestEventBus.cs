@@ -4,6 +4,7 @@ using UnityEngine.TestTools;
 using NUnit.Framework;
 using System.Collections;
 using UnityEventBus.Core;
+using UnityEventBus.API;
 
 namespace Testing.UnityEventBus
 {
@@ -16,7 +17,7 @@ namespace Testing.UnityEventBus
         [SetUp]
         public void InitTestObject()
         {
-            testObject = new EventBus();
+            testObject = new SyncEventBus();
         }
 
         [Test]

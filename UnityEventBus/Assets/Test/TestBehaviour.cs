@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEventBus.API;
 using UnityEventBus.Core;
 
 public class TestBehaviour : MonoBehaviour {
@@ -10,7 +11,7 @@ public class TestBehaviour : MonoBehaviour {
 	// Use this for initialization
 	void Awake()
     {
-        eventBus = new EventBus();
+        eventBus = new SyncEventBus();
         eventBus.Register(this);
 	}
 	
