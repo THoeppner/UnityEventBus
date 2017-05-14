@@ -1,0 +1,4 @@
+*.csproj
+*.sln
+/UnityEventBus/Library
+/UnityEventBus/Temp
