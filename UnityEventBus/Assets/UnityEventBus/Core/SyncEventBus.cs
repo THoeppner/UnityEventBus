@@ -1,5 +1,7 @@
 ﻿using Assets.UnityEventBus.Core;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEventBus.API;
 
 namespace UnityEventBus.Core
 {
@@ -9,9 +11,11 @@ namespace UnityEventBus.Core
         {
             if (string.IsNullOrEmpty(eventName)) return;
 
-            List<DelegateDefinition> delegatesToFire = delegateDefinitions.FindAll(di => di.eventName == eventName);
-            foreach(DelegateDefinition di in delegatesToFire)
-                di.delegateToFire.DynamicInvoke(eventName);
+            EventArgument ea = new SimpleEventArgument(eventName, Time.time, null, null);
+
+            List<DelegateDefinition> delegatesToFire = register.GetDelegatesForEvent(eventName);
+            foreach(DelegateDefinition dd in delegatesToFire)
+                dd.delegateToFire.DynamicInvoke(ea);
         }
     }
 

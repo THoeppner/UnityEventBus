@@ -7,51 +7,42 @@ using UnityEventBus.API;
 
 namespace UnityEventBus.Core
 {
-    public delegate void StringMethod(string s);
-
     public abstract class EventBusBase : EventBus
     {
-        protected List<DelegateDefinition> delegateDefinitions = new List<DelegateDefinition>();
+        protected DelegateRegister register = new DelegateRegister();
 
         #region Impl of EventBus
 
         public string Name { get; set; }
 
-        public bool IsRegistered(object listener)
-        {
-            if (listener == null) return false;
-            List<DelegateDefinition> delegatesToRemove = delegateDefinitions.FindAll(di => di.target == listener);
-            return delegatesToRemove.Count > 0;
-        }
-
-
         public void Register(object listener)
         {
-            // Find all methods which have the attribute Subscribe
-            MethodInfo[] methods = listener.GetType().GetMethods()
-                                    .Where(m => m.GetCustomAttributes(typeof(SubscribeAttribute), false).Length > 0)
-                                    .ToArray();
-
-            foreach (MethodInfo mi in methods)
-            {
-                // We only support one SubscribeAttribute per method
-                SubscribeAttribute[] attrs = (SubscribeAttribute[])mi.GetCustomAttributes(typeof(SubscribeAttribute), false);
-                if (string.IsNullOrEmpty(attrs[0].EventName))
-                    continue;
-
-                DelegateDefinition di = new DelegateDefinition() { eventName = attrs[0].EventName, target = listener };
-                di.delegateToFire = Delegate.CreateDelegate(typeof(StringMethod), listener, mi);
-                delegateDefinitions.Add(di);
-            }
+            register.Register(listener);
         }
 
-        public void Unregister(object listener, string eventName)
+        public void RegisterForEvent(object listener, string eventName)
         {
-            if (string.IsNullOrEmpty(eventName)) return;
+            register.RegisterForEvent(listener, eventName);
+        }
 
-            List<DelegateDefinition> delegatesToRemove = delegateDefinitions.FindAll(di => di.eventName == eventName);
-            foreach (DelegateDefinition di in delegatesToRemove)
-                delegateDefinitions.Remove(di);
+        public void Unregister(object listener)
+        {
+            register.Unregister(listener);
+        }
+
+        public void UnregisterForEvent(object listener, string eventName)
+        {
+            register.UnregisterForEvent(listener, eventName);
+        }
+
+        public bool IsRegistered(object listener)
+        {
+            return register.IsRegistered(listener);
+        }
+
+        public bool IsRegisteredForEvent(object listener, string eventName)
+        {
+            return register.IsRegisteredForEvent(listener, eventName);
         }
 
         #endregion

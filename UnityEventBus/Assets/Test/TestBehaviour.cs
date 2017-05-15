@@ -1,7 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿
 using UnityEngine;
 using UnityEventBus.API;
+using UnityEventBus.Attributes;
 using UnityEventBus.Core;
 
 public class TestBehaviour : MonoBehaviour {
@@ -30,21 +30,21 @@ public class TestBehaviour : MonoBehaviour {
     }
 
     [Subscribe("Started")]
-    public void OnStarted1(string message)
+    public void OnStarted1(EventArgument e)
     {
-        Debug.Log("TestBehaviour::OnStarted1: " + message);
+        Debug.Log("TestBehaviour::OnStarted1: " + e.Data);
     }
 
     [Subscribe("Started")]
-    public void OnStarted2(string message)
+    public void OnStarted2(EventArgument e)
     {
-        Debug.Log("TestBehaviour::OnStarted2:" + message);
+        Debug.Log("TestBehaviour::OnStarted2:" + e.Data);
     }
 
     [Subscribe("GetHit")]
-    public void OnGetHit(string message)
+    public void OnGetHit(EventArgument e)
     {
-        Debug.Log("TestBehaviour::OnGetHit:" + message);
+        Debug.Log("TestBehaviour::OnGetHit:" + e.Data);
     }
 
 }

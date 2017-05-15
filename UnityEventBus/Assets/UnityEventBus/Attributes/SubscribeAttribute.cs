@@ -1,7 +1,7 @@
 ﻿
 using System;
 
-namespace UnityEventBus.Core
+namespace UnityEventBus.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
     public class SubscribeAttribute : Attribute
