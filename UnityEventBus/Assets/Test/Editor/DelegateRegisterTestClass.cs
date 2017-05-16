@@ -4,7 +4,7 @@ using UnityEventBus.Attributes;
 
 namespace Testing.UnityEventBus
 {
-    public class SubscribeClass
+    public class DelegateRegisterTestClass
     {
         [Subscribe("Started")]
         public void OnStarted(EventArgument e)

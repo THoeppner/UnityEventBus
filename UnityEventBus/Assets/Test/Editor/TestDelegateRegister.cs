@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using Assets.UnityEventBus.Core;
+using System.IO;
 
 namespace Testing.UnityEventBus
 {
@@ -16,7 +17,7 @@ namespace Testing.UnityEventBus
         [Test]
         public void TestRegister()
         {
-            SubscribeClass sc = new SubscribeClass();
+            DelegateRegisterTestClass sc = new DelegateRegisterTestClass();
             testObject.Register(sc);
             Assert.IsTrue(testObject.IsRegistered(sc), "The given class isn't registerd");
             Assert.IsTrue(testObject.IsRegisteredForEvent(sc, "Started"), "The given class isn't registerd for event Started");
@@ -27,7 +28,7 @@ namespace Testing.UnityEventBus
         [Test]
         public void TestRegisterForEvent()
         {
-            SubscribeClass sc = new SubscribeClass();
+            DelegateRegisterTestClass sc = new DelegateRegisterTestClass();
             testObject.RegisterForEvent(sc, "Started");
             Assert.IsTrue(testObject.IsRegisteredForEvent(sc, "Started"), "The given class isn't registerd for event Started");
             Assert.IsFalse(testObject.IsRegisteredForEvent(sc, "Ended"), "The given class is registerd for event Ended");
@@ -47,7 +48,7 @@ namespace Testing.UnityEventBus
         [Test]
         public void TestUnregister()
         {
-            SubscribeClass sc = new SubscribeClass();
+            DelegateRegisterTestClass sc = new DelegateRegisterTestClass();
             testObject.Register(sc);
             testObject.Unregister(sc);
             Assert.IsFalse(testObject.IsRegistered(sc), "The given class is registerd");
@@ -59,7 +60,7 @@ namespace Testing.UnityEventBus
         [Test]
         public void TestUnregisterForEvent()
         {
-            SubscribeClass sc = new SubscribeClass();
+            DelegateRegisterTestClass sc = new DelegateRegisterTestClass();
             testObject.Register(sc);
 
             testObject.UnregisterForEvent(sc, "Started");
@@ -78,6 +79,12 @@ namespace Testing.UnityEventBus
             Assert.IsFalse(testObject.IsRegisteredForEvent(sc, "GetHit"), "The given class is registerd for event GetHit");
         }
 
-        // TODO: Test for class without subscribe attribute
+        [Test]
+        public void TestClassWithoutSubscribeAttribute()
+        {
+            object o = new object();
+            testObject.Register(o);
+            Assert.IsFalse(testObject.IsRegistered(o), "The given class is registerd.");
+        }
     }
 }
