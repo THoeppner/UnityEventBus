@@ -15,9 +15,9 @@ public class TestBehaviour2 : MonoBehaviour {
 	}
 	
     [Subscribe("Started")]
-    public void OnStarted1(EventArgument e)
+    public void OnStarted(EventArgument e)
     {
-        Debug.Log("TestBehaviour2::OnStarted1: " + e.Data);
+        Debug.Log("TestBehaviour2::OnStarted: " + e.Data);
     }
 
     [Subscribe("GetHit")]

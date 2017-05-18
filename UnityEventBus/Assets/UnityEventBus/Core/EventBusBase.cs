@@ -47,7 +47,12 @@ namespace UnityEventBus.Core
 
         #endregion
 
+        #region Methods which must be overriden by the derived classes
+
         public abstract void Post(string eventName);
+        public abstract void Post(string eventName, string filter);
+
+        #endregion
     }
 }
 

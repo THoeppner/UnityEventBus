@@ -62,6 +62,22 @@ namespace Testing.UnityEventBus
             Assert.AreEqual(c1.UnregisterEventCounter, 1, "The method counter isn't correct");
         }
 
+        [Test]
+        public void TestFilterAttribute()
+        {
+            FilterTestClass c0 = new FilterTestClass();
+            FilterTestClass1 c1 = new FilterTestClass1();
+            testObject.Register(c0);
+            testObject.Register(c1);
+            testObject.Post("Started", "OnlyThis");
+            Assert.AreEqual(c0.StartedCounter, 1, "The method counter isn't correct");
+            Assert.AreEqual(c1.StartedCounter, 0, "The method counter isn't correct");
+            testObject.Post("Started", "OnlyThat");
+            Assert.AreEqual(c0.StartedCounter, 1, "The method counter isn't correct");
+            Assert.AreEqual(c1.StartedCounter, 1, "The method counter isn't correct");
+
+        }
+
 
         //// A UnityTest behaves like a coroutine in PlayMode
         //// and allows you to yield null to skip a frame in EditMode

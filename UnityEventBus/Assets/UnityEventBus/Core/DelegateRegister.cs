@@ -9,6 +9,12 @@ namespace Assets.UnityEventBus.Core
 {
     public class DelegateRegister
     {
+        private class DelegateRegisterHelper
+        {
+            public SubscribeAttribute subscribeAttribute;
+            public MethodInfo methodInfo;
+        }
+
         private delegate void EventArgumentDelegate(EventArgument e);
 
         List<DelegateDefinition> delegateDefinitions = new List<DelegateDefinition>();
@@ -17,14 +23,11 @@ namespace Assets.UnityEventBus.Core
         {
             if (listener == null) return; 
 
-            Dictionary<string, MethodInfo> methodInfos = GetMethodInfosWithValidSubscribeAttribute(listener);
-            foreach (KeyValuePair<string, MethodInfo> item in methodInfos)
+            Dictionary<string, DelegateRegisterHelper> methodInfos = GetMethodInfosWithValidSubscribeAttribute(listener);
+            foreach (KeyValuePair<string, DelegateRegisterHelper> item in methodInfos)
             {
                 if (IsRegisteredForEvent(listener, item.Key)) continue; // Already registered
-
-                DelegateDefinition di = new DelegateDefinition() { eventName = item.Key, target = listener };
-                di.delegateToFire = Delegate.CreateDelegate(typeof(EventArgumentDelegate), listener, item.Value);
-                delegateDefinitions.Add(di);
+                delegateDefinitions.Add(CreateDelegateDefinition(listener, item.Value));
             }
         }
 
@@ -33,12 +36,9 @@ namespace Assets.UnityEventBus.Core
             if ((listener == null) || (string.IsNullOrEmpty(eventName))) return; // Invalid arguments
             if (IsRegisteredForEvent(listener, eventName)) return; // already registered
 
-            MethodInfo mi = GetMethodInfoForEventName(listener, eventName);
-            if (mi == null) return;
-
-            DelegateDefinition dd = new DelegateDefinition() { eventName = eventName, target = listener };
-            dd.delegateToFire = Delegate.CreateDelegate(typeof(EventArgumentDelegate), listener, mi);
-            delegateDefinitions.Add(dd);
+            DelegateRegisterHelper helper = GetDelegateRegisterHelperForEvent(listener, eventName);
+            if (helper != null) 
+                delegateDefinitions.Add(CreateDelegateDefinition(listener, helper));
         }
 
         public void Unregister(object listener)
@@ -69,14 +69,30 @@ namespace Assets.UnityEventBus.Core
             return delegates.Count > 0;
         }
 
+        // TODO: Create class ObjectInspector to find the subscribe attributes
+
         public List<DelegateDefinition> GetDelegatesForEvent(string eventName)
         {
             return delegateDefinitions.FindAll(dd => dd.eventName == eventName);
         }
 
-        private Dictionary<string, MethodInfo> GetMethodInfosWithValidSubscribeAttribute(object listener)
+        public List<DelegateDefinition> GetDelegatesForEvent(string eventName, string filter)
         {
-            Dictionary<string, MethodInfo> infos = new Dictionary<string, MethodInfo>();
+            return delegateDefinitions.FindAll(dd => dd.eventName == eventName && dd.filter == filter);
+        }
+
+
+        private DelegateRegisterHelper GetDelegateRegisterHelperForEvent(object listener, string eventName)
+        {
+            DelegateRegisterHelper helper;
+            Dictionary<string, DelegateRegisterHelper> infos = GetMethodInfosWithValidSubscribeAttribute(listener);
+            infos.TryGetValue(eventName, out helper);
+            return helper;
+        }
+
+        private Dictionary<string, DelegateRegisterHelper> GetMethodInfosWithValidSubscribeAttribute(object listener)
+        {
+            Dictionary<string, DelegateRegisterHelper> infos = new Dictionary<string, DelegateRegisterHelper>();
 
             // Find all methods which have the attribute Subscribe
             MethodInfo[] methods = listener.GetType().GetMethods()
@@ -89,18 +105,16 @@ namespace Assets.UnityEventBus.Core
                 SubscribeAttribute[] attrs = (SubscribeAttribute[])mi.GetCustomAttributes(typeof(SubscribeAttribute), false);
                 if (string.IsNullOrEmpty(attrs[0].EventName))
                     continue;
-
-                infos[attrs[0].EventName] = mi;
+                infos[attrs[0].EventName] = new DelegateRegisterHelper() { subscribeAttribute = attrs[0], methodInfo = mi };
             }
             return infos;
         }
 
-        private MethodInfo GetMethodInfoForEventName(object listener, string eventName)
+        private DelegateDefinition CreateDelegateDefinition(object listener, DelegateRegisterHelper helper)
         {
-            Dictionary<string, MethodInfo> infos = GetMethodInfosWithValidSubscribeAttribute(listener);
-            MethodInfo mi;
-            infos.TryGetValue(eventName, out mi);
-            return mi;
+            DelegateDefinition dd = new DelegateDefinition() { eventName = helper.subscribeAttribute.EventName, target = listener, filter = helper.subscribeAttribute.Filter };
+            dd.delegateToFire = Delegate.CreateDelegate(typeof(EventArgumentDelegate), listener, helper.methodInfo);
+            return dd;
         }
     }
 }

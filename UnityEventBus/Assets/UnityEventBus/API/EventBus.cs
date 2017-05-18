@@ -49,6 +49,17 @@ namespace UnityEventBus.API
         /// <returns></returns>
         bool IsRegisteredForEvent(object listener, string eventName);
 
+        /// <summary>
+        /// Calls each subscibed method for the event with the given name
+        /// </summary>
+        /// <param name="eventName"></param>
         void Post(string eventName);
+
+        /// <summary>
+        /// Calls each subscribed mathod for the event with the given name and the given filter
+        /// </summary>
+        /// <param name="eventName"></param>
+        /// <param name="filter"></param>
+        void Post(string eventName, string filter);
     }
 }
