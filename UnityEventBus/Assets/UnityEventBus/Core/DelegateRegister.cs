@@ -1,20 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
-using System.Linq;
-using UnityEventBus.Attributes;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using UnityEventBus.API;
 
 namespace Assets.UnityEventBus.Core
 {
     public class DelegateRegister
     {
-        private class DelegateRegisterHelper
-        {
-            public SubscribeAttribute subscribeAttribute;
-            public MethodInfo methodInfo;
-        }
-
         private delegate void EventArgumentDelegate(EventArgument e);
 
         List<DelegateDefinition> delegateDefinitions = new List<DelegateDefinition>();
@@ -23,8 +14,8 @@ namespace Assets.UnityEventBus.Core
         {
             if (listener == null) return; 
 
-            Dictionary<string, DelegateRegisterHelper> methodInfos = GetMethodInfosWithValidSubscribeAttribute(listener);
-            foreach (KeyValuePair<string, DelegateRegisterHelper> item in methodInfos)
+            Dictionary<string, ObjectInspectionHelper> methodInfos = ObjectInspector.GetMethodInfosWithValidSubscribeAttribute(listener);
+            foreach (KeyValuePair<string, ObjectInspectionHelper> item in methodInfos)
             {
                 if (IsRegisteredForEvent(listener, item.Key)) continue; // Already registered
                 delegateDefinitions.Add(CreateDelegateDefinition(listener, item.Value));
@@ -36,7 +27,7 @@ namespace Assets.UnityEventBus.Core
             if ((listener == null) || (string.IsNullOrEmpty(eventName))) return; // Invalid arguments
             if (IsRegisteredForEvent(listener, eventName)) return; // already registered
 
-            DelegateRegisterHelper helper = GetDelegateRegisterHelperForEvent(listener, eventName);
+            ObjectInspectionHelper helper = ObjectInspector.GetMethodInfoForSubsribedEventEvent(listener, eventName);
             if (helper != null) 
                 delegateDefinitions.Add(CreateDelegateDefinition(listener, helper));
         }
@@ -69,8 +60,6 @@ namespace Assets.UnityEventBus.Core
             return delegates.Count > 0;
         }
 
-        // TODO: Create class ObjectInspector to find the subscribe attributes
-
         public List<DelegateDefinition> GetDelegatesForEvent(string eventName)
         {
             return delegateDefinitions.FindAll(dd => dd.eventName == eventName);
@@ -81,40 +70,15 @@ namespace Assets.UnityEventBus.Core
             return delegateDefinitions.FindAll(dd => dd.eventName == eventName && dd.filter == filter);
         }
 
+        #region private helper
 
-        private DelegateRegisterHelper GetDelegateRegisterHelperForEvent(object listener, string eventName)
-        {
-            DelegateRegisterHelper helper;
-            Dictionary<string, DelegateRegisterHelper> infos = GetMethodInfosWithValidSubscribeAttribute(listener);
-            infos.TryGetValue(eventName, out helper);
-            return helper;
-        }
-
-        private Dictionary<string, DelegateRegisterHelper> GetMethodInfosWithValidSubscribeAttribute(object listener)
-        {
-            Dictionary<string, DelegateRegisterHelper> infos = new Dictionary<string, DelegateRegisterHelper>();
-
-            // Find all methods which have the attribute Subscribe
-            MethodInfo[] methods = listener.GetType().GetMethods()
-                                    .Where(m => m.GetCustomAttributes(typeof(SubscribeAttribute), false).Length > 0)
-                                    .ToArray();
-
-            foreach (MethodInfo mi in methods)
-            {
-                // We only support one SubscribeAttribute per method
-                SubscribeAttribute[] attrs = (SubscribeAttribute[])mi.GetCustomAttributes(typeof(SubscribeAttribute), false);
-                if (string.IsNullOrEmpty(attrs[0].EventName))
-                    continue;
-                infos[attrs[0].EventName] = new DelegateRegisterHelper() { subscribeAttribute = attrs[0], methodInfo = mi };
-            }
-            return infos;
-        }
-
-        private DelegateDefinition CreateDelegateDefinition(object listener, DelegateRegisterHelper helper)
+        private DelegateDefinition CreateDelegateDefinition(object listener, ObjectInspectionHelper helper)
         {
             DelegateDefinition dd = new DelegateDefinition() { eventName = helper.subscribeAttribute.EventName, target = listener, filter = helper.subscribeAttribute.Filter };
             dd.delegateToFire = Delegate.CreateDelegate(typeof(EventArgumentDelegate), listener, helper.methodInfo);
             return dd;
         }
+
+        #endregion
     }
 }
