@@ -26,4 +26,10 @@ public class TestBehaviour2 : MonoBehaviour {
         Debug.Log("TestBehaviour2::OnGetHit:" + e.Data);
     }
 
+    [Subscribe("Delayed")]
+    public void OnDelayed(EventArgument e)
+    {
+        Debug.Log("TestBehaviour2::OnDelayed: " + e.Data);
+    }
+
 }

@@ -5,29 +5,51 @@ using UnityEventBus.API;
 
 namespace UnityEventBus.Core
 {
-    public class SyncEventBus : EventBusBase 
+    public class SyncEventBus : EventBusBase
     {
+        #region Overriden methods
+
         public override void Post(string eventName)
         {
-            if (string.IsNullOrEmpty(eventName)) return;
-
-            EventArgument ea = new SimpleEventArgument(eventName, Time.time, null, null);
-
-            List<DelegateDefinition> delegatesToFire = register.GetDelegatesForEvent(eventName);
-            foreach(DelegateDefinition dd in delegatesToFire)
-                dd.delegateToFire.DynamicInvoke(ea);
+            Post(eventName, "", 0);
         }
 
         public override void Post(string eventName, string filter)
         {
+            Post(eventName, filter, 0);
+        }
+
+        public override void Post(string eventName, float delay)
+        {
+            Post(eventName, "", delay);
+        }
+
+        public override void Post(string eventName, string filter, float delay)
+        {
             if (string.IsNullOrEmpty(eventName)) return;
 
-            EventArgument ea = new SimpleEventArgument(eventName, Time.time, null, null);
+            if (delay > 0)
+                postDelayer.Post(eventName, filter, delay);
+            else
+            {
+                EventArgument ea = new SimpleEventArgument(eventName, Time.time, null, null);
+                List<DelegateDefinition> delegatesToFire = register.GetDelegatesForEvent(eventName, filter);
 
-            List<DelegateDefinition> delegatesToFire = register.GetDelegatesForEvent(eventName, filter);
-            foreach (DelegateDefinition dd in delegatesToFire)
-                dd.delegateToFire.DynamicInvoke(ea);
+                foreach (DelegateDefinition dd in delegatesToFire)
+                    dd.delegateToFire.DynamicInvoke(ea);
+            }
         }
+
+        #endregion
+
+        #region Constructor
+
+        public SyncEventBus(string name)
+            : base(name)
+        {
+        }
+
+        #endregion
     }
 
 }

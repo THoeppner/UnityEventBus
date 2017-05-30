@@ -60,14 +60,12 @@ namespace Assets.UnityEventBus.Core
             return delegates.Count > 0;
         }
 
-        public List<DelegateDefinition> GetDelegatesForEvent(string eventName)
-        {
-            return delegateDefinitions.FindAll(dd => dd.eventName == eventName);
-        }
-
         public List<DelegateDefinition> GetDelegatesForEvent(string eventName, string filter)
         {
-            return delegateDefinitions.FindAll(dd => dd.eventName == eventName && dd.filter == filter);
+            if (string.IsNullOrEmpty(filter))
+                return delegateDefinitions.FindAll(dd => dd.eventName == eventName);
+            else
+                return delegateDefinitions.FindAll(dd => dd.eventName == eventName && dd.filter == filter);
         }
 
         #region private helper

@@ -13,7 +13,7 @@ namespace Testing.UnityEventBus
         [SetUp]
         public void InitTestObject()
         {
-            testObject = new SyncEventBus();
+            testObject = new SyncEventBus("MySyncEventBus");
         }
 
         [Test]

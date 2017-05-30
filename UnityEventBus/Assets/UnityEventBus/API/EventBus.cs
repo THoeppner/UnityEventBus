@@ -6,7 +6,7 @@ namespace UnityEventBus.API
         /// <summary>
         /// The name of this event bus
         /// </summary>
-        string Name { get; set; }
+        string Name { get; }
 
         /// <summary>
         /// Registers all methods with the Subscribe attribute of the given object 
@@ -50,16 +50,31 @@ namespace UnityEventBus.API
         bool IsRegisteredForEvent(object listener, string eventName);
 
         /// <summary>
-        /// Calls each subscibed method for the event with the given name
+        /// Calls each subscibed methods for the event with the given name
         /// </summary>
         /// <param name="eventName"></param>
         void Post(string eventName);
 
         /// <summary>
-        /// Calls each subscribed mathod for the event with the given name and the given filter
+        /// Calls each subscribed methods for the event with the given name and the given filter
         /// </summary>
         /// <param name="eventName"></param>
         /// <param name="filter"></param>
         void Post(string eventName, string filter);
+
+        /// <summary>
+        /// Calls each subscribed methods with the given delay for the event with the given name
+        /// </summary>
+        /// <param name="eventName"></param>
+        /// <param name="delay"></param>
+        void Post(string eventName, float delay);
+
+        /// <summary>
+        /// Calls each subscribed methods with the given delay for the event with the given name and the given filter 
+        /// </summary>
+        /// <param name="eventName"></param>
+        /// <param name="filter"></param>
+        /// <param name="delay"></param>
+        void Post(string eventName, string filter, float delay);
     }
 }

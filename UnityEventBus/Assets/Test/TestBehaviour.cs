@@ -11,7 +11,7 @@ public class TestBehaviour : MonoBehaviour {
 	// Use this for initialization
 	void Awake()
     {
-        eventBus = new SyncEventBus();
+        eventBus = new SyncEventBus("MySyncEventBus");
         eventBus.Register(this);
 	}
 	
@@ -25,6 +25,10 @@ public class TestBehaviour : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.H))
         {
             eventBus.Post("GetHit");
+        }
+        if (Input.GetKeyDown(KeyCode.D))
+        {
+            eventBus.Post("Delayed", 2);
         }
 
     }
@@ -41,4 +45,9 @@ public class TestBehaviour : MonoBehaviour {
         Debug.Log("TestBehaviour::OnGetHit:" + e.Data);
     }
 
+    [Subscribe("Delayed")]
+    public void OnDelayed(EventArgument e)
+    {
+        Debug.Log("TestBehaviour::OnDelayed: " + e.Data);
+    }
 }

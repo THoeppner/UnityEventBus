@@ -1,8 +1,5 @@
 ﻿using Assets.UnityEventBus.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+using UnityEngine;
 using UnityEventBus.API;
 
 namespace UnityEventBus.Core
@@ -13,7 +10,7 @@ namespace UnityEventBus.Core
 
         #region Impl of EventBus
 
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         public void Register(object listener)
         {
@@ -51,6 +48,22 @@ namespace UnityEventBus.Core
 
         public abstract void Post(string eventName);
         public abstract void Post(string eventName, string filter);
+        public abstract void Post(string eventName, float delay);
+        public abstract void Post(string eventName, string filter, float delay);
+
+        #endregion
+
+        #region Constructor
+
+        protected PostDelayer postDelayer;
+
+        protected EventBusBase(string name)
+        {
+            Name = name;
+            GameObject go = new GameObject(name, typeof(PostDelayer));
+            postDelayer = go.GetComponent<PostDelayer>();
+            postDelayer.EventBus = this;
+        }
 
         #endregion
     }
